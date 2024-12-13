@@ -6,19 +6,19 @@ import (
 	"strings"
 )
 
-// SizeFilter and its attributes
-type SizeFilter struct {
+// sizeFilter and its attributes
+type sizeFilter struct {
 	opr   string // Operator
 	value int64  // Value
 }
 
-func newSizeFilter() AttrFilter {
-	return &SizeFilter{}
+func newSizeFilter() attrFilter {
+	return &sizeFilter{}
 }
 
-func (sf *SizeFilter) Configure(filter string) error {
-	keyLen := len(SizeFilterKey)
-	str := strings.Map(StringConv, filter)
+func (sf *sizeFilter) configure(filter string) error {
+	keyLen := len(sizeFilterKey)
+	str := strings.Map(stringConv, filter)
 
 	if len(str) < (keyLen + 2) {
 		return fmt.Errorf("invalid size filter")
@@ -44,7 +44,7 @@ func (sf *SizeFilter) Configure(filter string) error {
 	return fmt.Errorf("invalid size filter operator")
 }
 
-func (sf *SizeFilter) IsAcceptable(fileInfo *BlobAttr) bool {
+func (sf *sizeFilter) isAcceptable(fileInfo *BlobAttr) bool {
 	switch sf.opr {
 	case "<=":
 		return sf.value <= fileInfo.Size

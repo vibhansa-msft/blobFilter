@@ -7,21 +7,21 @@ import (
 )
 
 // RegexFilter and its attributes
-type NameFilter struct {
+type nameFilter struct {
 	opr bool           // true means equal to , false means not equal to
 	exp *regexp.Regexp // Regex to be matched
 }
 
-func newNameFilter() AttrFilter {
-	return &NameFilter{}
+func newNameFilter() attrFilter {
+	return &nameFilter{}
 }
 
-func (nf *NameFilter) Configure(filter string) error {
-	keyLen := len(NameFilterKey)
-	str := strings.Map(StringConv, filter)
+func (nf *nameFilter) configure(filter string) error {
+	keyLen := len(nameFilterKey)
+	str := strings.Map(stringConv, filter)
 
 	if len(str) < (keyLen + 2) {
-		return fmt.Errorf("invalid size filter")
+		return fmt.Errorf("invalid name filter")
 	}
 
 	operand := str[keyLen : keyLen+2] // single char after tier (ex- tier=hot , here sinChk will be "=")
@@ -46,6 +46,6 @@ func (nf *NameFilter) Configure(filter string) error {
 	return nil
 }
 
-func (nf *NameFilter) IsAcceptable(fileInfo *BlobAttr) bool {
+func (nf *nameFilter) isAcceptable(fileInfo *BlobAttr) bool {
 	return (nf.opr == (nf.exp.MatchString((*fileInfo).Name)))
 }

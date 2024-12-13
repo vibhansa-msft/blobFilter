@@ -14,16 +14,16 @@ type BlobAttr struct {
 	Tags  map[string]string // Blob-tags (key value pair)
 }
 
-type AttrFilter interface {
+type attrFilter interface {
 	// Configure the filter
-	Configure(filter string) error
+	configure(filter string) error
 
 	// Apply the filter
-	IsAcceptable(fileInfo *BlobAttr) bool
+	isAcceptable(fileInfo *BlobAttr) bool
 }
 
 // Create map of filters and their object creator functions
-type filterConstructor func() AttrFilter
+type filterConstructor func() attrFilter
 
 func extractName(str string) string {
 	// Filter name shall be with alphabets only
@@ -39,7 +39,7 @@ func extractName(str string) string {
 }
 
 // Used for converting string given by user to ideal string so that it becomes easy to process
-func StringConv(r rune) rune {
+func stringConv(r rune) rune {
 	if unicode.IsSpace(r) {
 		return -1 // Remove space
 	}
@@ -53,23 +53,25 @@ func StringConv(r rune) rune {
 
 // List of allowed filters
 const (
-	NameFilterKey       = "name"
-	FormatFilterKey     = "format"
-	SizeFilterKey       = "size"
-	ModTimeFilterKey    = "modtime"
-	AccessTierFilterKey = "tier"
-	TagFilterKey        = "tag"
+	nameFilterKey       = "name"
+	formatFilterKey     = "format"
+	sizeFilterKey       = "size"
+	modTimeFilterKey    = "modtime"
+	accessTierFilterKey = "tier"
+	tagFilterKey        = "tag"
 )
 
 // Factory to hold constructors of each allowed filter
 var filterFactory map[string]filterConstructor
 
 func init() {
+	filterFactory = make(map[string]filterConstructor)
+
 	// Init the factory so that based on string we can create filters
-	filterFactory[NameFilterKey] = newNameFilter             // Filter on basis of blob name
-	filterFactory[FormatFilterKey] = newFormatFilter         // Filter on basis of blob format
-	filterFactory[SizeFilterKey] = newSizeFilter             // Filter on basis of blob size
-	filterFactory[ModTimeFilterKey] = newModTimeFilter       // Filter on basis of blob modification time
-	filterFactory[AccessTierFilterKey] = newAccessTierFilter // Filter on basis of blob tier
-	filterFactory[TagFilterKey] = newBlobTagFilter           // Filter on basis of blob tags
+	filterFactory[nameFilterKey] = newNameFilter             // Filter on basis of blob name
+	filterFactory[formatFilterKey] = newFormatFilter         // Filter on basis of blob format
+	filterFactory[sizeFilterKey] = newSizeFilter             // Filter on basis of blob size
+	filterFactory[modTimeFilterKey] = newModTimeFilter       // Filter on basis of blob modification time
+	filterFactory[accessTierFilterKey] = newAccessTierFilter // Filter on basis of blob tier
+	filterFactory[tagFilterKey] = newBlobTagFilter           // Filter on basis of blob tags
 }

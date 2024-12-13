@@ -6,11 +6,8 @@ import (
 )
 
 type BlobFilter struct {
-	filters [][]AttrFilter
-}
-
-func NewBlobFilter() *BlobFilter {
-	return &BlobFilter{}
+	filters         [][]attrFilter
+	parallelFilters *concurrentFilters
 }
 
 // This function parses the input string and stores filters in the BlobFilter object
@@ -30,7 +27,7 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 	splitOr := strings.Split(filterStr, "||") // Split the string on basis of logical OR
 
 	for _, andFilters := range splitOr {
-		var individualFilter []AttrFilter // This array will store all filters separated by && at each index
+		var individualFilter []attrFilter // This array will store all filters separated by && at each index
 
 		splitAnd := strings.Split(andFilters, "&&") // Split the sub filter on basis of logical AND
 
@@ -50,7 +47,7 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 				}
 
 				// Configure the filter object
-				err := filterObj.Configure(singleFilter)
+				err := filterObj.configure(singleFilter)
 				if err != nil {
 					return fmt.Errorf("failed to configure filter: %s", singleFilter)
 				}
@@ -68,4 +65,76 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 	}
 
 	return nil
+}
+
+// --------------------------------------------------------------------------------------
+
+// Check a given file attributes pass the configured filter or not
+func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
+	finalResult := false
+	for _, filterSet := range bf.filters {
+		for _, individualFilter := range filterSet {
+			// One filterSet is composition of AND checks
+			finalResult = finalResult && individualFilter.isAcceptable(attr)
+			if !finalResult {
+				// If one of the filter fails then its going to be FALSE result only so
+				// no need to check further filters
+				break
+			}
+		}
+
+		// all filterSets are composition of OR checks
+		if finalResult {
+			// One of the filterSet is TRUE so return TRUE
+			return true
+		}
+	}
+
+	// Nothing matched so return FALSE
+	return false
+}
+
+// --------------------------------------------------------------------------------------
+// Parallel Filtering logic below
+
+// Enable parallel filtering for the application
+func (bf *BlobFilter) StartParallelProcessing(concurrency int) {
+	// Create work and results channels for the application
+	bf.parallelFilters = &concurrentFilters{
+		work:    make(chan filterKey, concurrency*2),
+		results: make(chan filterResult, concurrency*2),
+	}
+
+	// Start worker threads that will process the keys
+	bf.parallelFilters.wg.Add(concurrency)
+	for i := 0; i < concurrency; i++ {
+		go bf.parallelFilters.filterProcessor(bf.IsFileAcceptable)
+	}
+}
+
+// Stop parallel filtering
+func (bf *BlobFilter) StopParallelProcessing() {
+	// Close the work channel and wait for results to flush out
+	if bf.parallelFilters != nil {
+		bf.parallelFilters.close()
+	}
+	bf.parallelFilters = nil
+}
+
+// Add one item for filtering
+func (bf *BlobFilter) AddItem(key string, attr *BlobAttr) error {
+	if bf.parallelFilters != nil {
+		bf.parallelFilters.addWork(key, attr)
+		return nil
+	}
+	return fmt.Errorf("parallel filtering is not enabled")
+}
+
+// Get result of the next filtered item
+func (bf *BlobFilter) NextResult() (string, bool) {
+	if bf.parallelFilters != nil {
+		return bf.parallelFilters.getNextResult()
+	}
+
+	return "", false
 }

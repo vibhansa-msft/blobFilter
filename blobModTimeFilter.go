@@ -7,18 +7,18 @@ import (
 )
 
 // modTimeFilter and its attributes
-type ModTimeFilter struct {
+type modTimeFilter struct {
 	opr   string    // Operator
 	value time.Time // Value
 }
 
-func newModTimeFilter() AttrFilter {
-	return &ModTimeFilter{}
+func newModTimeFilter() attrFilter {
+	return &modTimeFilter{}
 }
 
-func (mtf *ModTimeFilter) Configure(filter string) error {
-	keyLen := len(ModTimeFilterKey)
-	str := strings.Map(StringConv, filter)
+func (mtf *modTimeFilter) configure(filter string) error {
+	keyLen := len(modTimeFilterKey)
+	str := filter
 
 	if len(str) < (keyLen + 2) {
 		return fmt.Errorf("invalid modified time filter")
@@ -45,7 +45,7 @@ func (mtf *ModTimeFilter) Configure(filter string) error {
 	return fmt.Errorf("invalid time filter operator")
 }
 
-func (mtf *ModTimeFilter) IsAcceptable(fileInfo *BlobAttr) bool {
+func (mtf *modTimeFilter) isAcceptable(fileInfo *BlobAttr) bool {
 	switch mtf.opr {
 	case "<=":
 		return fileInfo.Mtime.Before(mtf.value) || fileInfo.Mtime.Equal(mtf.value)
