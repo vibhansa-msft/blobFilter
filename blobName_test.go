@@ -77,23 +77,29 @@ func (suite *nameTestSuite) TestMultipleFilter() {
 	testFileName := "mine1982.doc" // File name to be used as input to filtering api
 
 	filters := map[string]bool{
-		"m*":  true, // One or more occurance of m in file name
-		"^*":  true, // * match
-		"\\.": true, // expect a . in between the file name
-
-		"^*z":      false, // z not at the first character of the file name
-		"^*z$":     false, // z at the end of the file name
-		"^a[a-z]*": false, // starts with a and followed by any number of a-z characters
-		"^a*z":     false, // starts with a and ends with z
-
-		"^*.doc": true,  // ends with .doc
-		"^*.pdf": false, // ends with .pdf
-
-		"^a[a-z]*.*doc": false, // starts with a and followed by any number of a-z characters and ends with .doc
-		"^m[a-z]*.*doc": true,  // starts with m and followed by any number of a-z characters and ends with .doc
-		"^m[A-Z]*.doc":  false, // starts with m and followed by any number of A-Z characters and ends with .doc
-
-		"^mine[0-1]\\d{3}.*": true, // starts with mine followed by 4 digit number
+		"m":                  true,  // contains m somewhere in the name
+		"z":                  false, // contains z somewhere in the name
+		"^m":                 true,  // name starts with m
+		"^a":                 false, // name starts with a
+		"c$":                 true,  // name ends with c
+		"a$":                 false, // name ends with a
+		"m*":                 true,  // One or more occurance of m in file name
+		"^m.*":               true,  // starts with m followed by anything
+		"^m.*\\.doc":         true,  // starts with m and has .doc in name
+		"^m.*\\.doc$":        true,  // starts with m and ends with .doc in name
+		"^*":                 true,  // * match
+		"\\.":                true,  // expect a . in the file name
+		"\\.doc":             true,  // expect .doc in the end of the name
+		"^*z":                false, // z not at the first character of the file name
+		"^*z$":               false, // z at the end of the file name
+		"^a[a-z]*":           false, // starts with a and followed by any number of a-z characters
+		"^a*z":               false, // starts with a and ends with z
+		"^*.doc":             true,  // ends with .doc
+		"^*.pdf":             false, // ends with .pdf
+		"^a[a-z]*.*doc":      false, // starts with a and followed by any number of a-z characters and ends with .doc
+		"^m[a-z]*.*doc":      true,  // starts with m and followed by any number of a-z characters and ends with .doc
+		"^m[A-Z]*.doc":       false, // starts with m and followed by any number of A-Z characters and ends with .doc
+		"^mine[0-1]\\d{3}.*": true,  // starts with mine followed by 4 digit number
 	}
 
 	for filter := range filters {
