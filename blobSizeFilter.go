@@ -47,17 +47,17 @@ func (sf *sizeFilter) configure(filter string) error {
 func (sf *sizeFilter) isAcceptable(fileInfo *BlobAttr) bool {
 	switch sf.opr {
 	case "<=":
-		return sf.value <= fileInfo.Size
+		return fileInfo.Size <= sf.value
 	case ">=":
-		return sf.value >= fileInfo.Size
+		return fileInfo.Size >= sf.value
 	case "!=":
-		return sf.value != fileInfo.Size
+		return fileInfo.Size != sf.value
 	case ">":
-		return sf.value > fileInfo.Size
+		return fileInfo.Size > sf.value
 	case "<":
-		return sf.value < fileInfo.Size
+		return fileInfo.Size < sf.value
 	case "=":
-		return sf.value == fileInfo.Size
+		return fileInfo.Size == sf.value
 	}
 
 	return false

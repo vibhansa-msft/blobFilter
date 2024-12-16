@@ -29,7 +29,7 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 	for _, andFilters := range splitOr {
 		var individualFilter []attrFilter // This array will store all filters separated by && at each index
 
-		splitAnd := strings.Split(andFilters, "&&") // Split the sub filter on basis of logical AND
+		splitAnd := strings.Split(strings.TrimSpace(andFilters), "&&") // Split the sub filter on basis of logical AND
 
 		for _, singleFilter := range splitAnd {
 			filterName := extractName(strings.TrimSpace(singleFilter))
@@ -42,14 +42,14 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 			if constructor, exists := filterFactory[filterName]; exists {
 				// Create the filter object
 				filterObj := constructor()
-				if filterObj != nil {
+				if filterObj == nil {
 					return fmt.Errorf("failed to create filter object: %s", singleFilter)
 				}
 
 				// Configure the filter object
 				err := filterObj.configure(singleFilter)
 				if err != nil {
-					return fmt.Errorf("failed to configure filter: %s", singleFilter)
+					return fmt.Errorf("failed to configure filter %s [%s]", singleFilter, err.Error())
 				}
 
 				// Append the filter object to the filter array
@@ -71,21 +71,21 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 
 // Check a given file attributes pass the configured filter or not
 func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
-	finalResult := false
 	for _, filterSet := range bf.filters {
+		andFilterFailed := false
 		for _, individualFilter := range filterSet {
 			// One filterSet is composition of AND checks
-			finalResult = finalResult && individualFilter.isAcceptable(attr)
-			if !finalResult {
+			if !individualFilter.isAcceptable(attr) {
 				// If one of the filter fails then its going to be FALSE result only so
 				// no need to check further filters
+				andFilterFailed = true
 				break
 			}
 		}
 
 		// all filterSets are composition of OR checks
-		if finalResult {
-			// One of the filterSet is TRUE so return TRUE
+		if !andFilterFailed {
+			// As one of the subfilter is pass then return true no need to check further filters
 			return true
 		}
 	}

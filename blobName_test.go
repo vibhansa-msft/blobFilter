@@ -78,6 +78,7 @@ func (suite *nameTestSuite) TestMultipleFilter() {
 
 	filters := map[string]bool{
 		"m":                  true,  // contains m somewhere in the name
+		"m+":                 true,  // contains m (one or more occurance) in the name
 		"z":                  false, // contains z somewhere in the name
 		"^m":                 true,  // name starts with m
 		"^a":                 false, // name starts with a

@@ -29,13 +29,22 @@ func extractName(str string) string {
 	// Filter name shall be with alphabets only
 	// First non alphabet character will be the end of filter name
 
-	for i := range str {
-		if !((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z')) {
-			return strings.ToLower(str[0:i])
+	var i int
+	var c rune
+
+	for i, c = range str {
+		if !unicode.IsLetter(c) {
+			break
 		}
 	}
 
-	return "invalid"
+	// If non alphabet was first or last character of the string then its invalid
+	if i == 0 || i == len(str)-1 {
+		return "invalid"
+	}
+
+	return strings.ToLower(str[:i])
+
 }
 
 // Used for converting string given by user to ideal string so that it becomes easy to process
