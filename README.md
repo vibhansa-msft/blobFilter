@@ -1,4 +1,6 @@
-# BlobFilter - Filter module to filter your Azure Storage Blobs based on various fields and patterns
+# BlobFilter 
+Filter module to filter your Azure Storage Blobs based on various fields and patterns
+
 ## About
 BlobFilter is an open source project developed to filter your blobs based on various conditions. This library can be integrated in any module or application that lists the Azure Storage Blobs using ListBlob API. Once the list of blobs is retrieved you can supply the details of blob to this filter library and check blob properties matches your set pattern or not.
 
@@ -51,7 +53,7 @@ BlobFilter allows user to filter blobs based on
     - As all subfilters are joined using OR first filter that matches with provided properties will terminate any further filtering and it will be considered a hit
     - Each sub-filter may have multiple conditions joined using AND. First condition that does not match will terminate further filtering of that sub filter and declare the result as miss.
 
-    
+
 
 
 
