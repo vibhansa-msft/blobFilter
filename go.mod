@@ -1,4 +1,4 @@
-module blobfilter
+module github.com/vibhansa-msft/blobfilter
 
 go 1.22.0
 
