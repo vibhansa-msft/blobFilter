@@ -20,7 +20,18 @@ type concurrentFilters struct {
 	results chan filterResult
 }
 
-func (cf *concurrentFilters) close() {
+func (cf *concurrentFilters) start(concurrency int, filter func(attr *BlobAttr) bool) {
+	cf.work = make(chan filterKey, concurrency*2)
+	cf.results = make(chan filterResult, concurrency*2)
+
+	// Start worker threads that will process the keys
+	cf.wg.Add(concurrency)
+	for i := 0; i < concurrency; i++ {
+		go cf.filterProcessor(filter)
+	}
+}
+
+func (cf *concurrentFilters) stop() {
 	close(cf.work)
 	cf.wg.Wait()
 	close(cf.results)

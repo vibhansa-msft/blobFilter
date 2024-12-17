@@ -6,8 +6,8 @@ import (
 )
 
 type BlobFilter struct {
-	filters         [][]attrFilter
-	parallelFilters *concurrentFilters
+	filters           [][]attrFilter
+	concurrentFilters *concurrentFilters
 }
 
 // This function parses the input string and stores filters in the BlobFilter object
@@ -97,34 +97,23 @@ func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
 // --------------------------------------------------------------------------------------
 // Parallel Filtering logic below
 
-// Enable parallel filtering for the application
-func (bf *BlobFilter) StartParallelProcessing(concurrency int) {
+// Setup workers and channels for parallel filtering
+func (bf *BlobFilter) EnableConcurrentFilter(concurrency int) {
 	// Create work and results channels for the application
-	bf.parallelFilters = &concurrentFilters{
-		work:    make(chan filterKey, concurrency*2),
-		results: make(chan filterResult, concurrency*2),
-	}
-
-	// Start worker threads that will process the keys
-	bf.parallelFilters.wg.Add(concurrency)
-	for i := 0; i < concurrency; i++ {
-		go bf.parallelFilters.filterProcessor(bf.IsFileAcceptable)
-	}
+	bf.concurrentFilters = &concurrentFilters{}
+	bf.concurrentFilters.start(concurrency, bf.IsFileAcceptable)
 }
 
-// Stop parallel filtering
-func (bf *BlobFilter) StopParallelProcessing() {
-	// Close the work channel and wait for results to flush out
-	if bf.parallelFilters != nil {
-		bf.parallelFilters.close()
-	}
-	bf.parallelFilters = nil
+// Terminate worker pool and close the channels
+func (bf *BlobFilter) TerminateConcurrentFilter() {
+	bf.concurrentFilters.stop()
+	bf.concurrentFilters = nil
 }
 
 // Add one item for filtering
 func (bf *BlobFilter) AddItem(key string, attr *BlobAttr) error {
-	if bf.parallelFilters != nil {
-		bf.parallelFilters.addWork(key, attr)
+	if bf.concurrentFilters != nil {
+		bf.concurrentFilters.addWork(key, attr)
 		return nil
 	}
 	return fmt.Errorf("parallel filtering is not enabled")
@@ -132,8 +121,8 @@ func (bf *BlobFilter) AddItem(key string, attr *BlobAttr) error {
 
 // Get result of the next filtered item
 func (bf *BlobFilter) NextResult() (string, bool) {
-	if bf.parallelFilters != nil {
-		return bf.parallelFilters.getNextResult()
+	if bf.concurrentFilters != nil {
+		return bf.concurrentFilters.getNextResult()
 	}
 
 	return "", false
