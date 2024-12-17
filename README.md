@@ -49,7 +49,7 @@ BlobFilter allows user to filter blobs based on
 - Example
     - ```size > 1000 && tag=key1:val1 || size > 2000 && tag=key2:val2 || tier=hot || name=^mine[0-1]\\d{3}.*```
     - This filter has 4 sub-filters
-    - ```size > 1000 && tag=key1:val1``` ``` size > 2000 && tag=key2:val2 ``` ```tier=hot``` and ```name=^mine[0-1]\\d{3}.*```
+    - ```size > 1000 && tag=key1:val1```, ``` size > 2000 && tag=key2:val2 ```, ```tier=hot``` and ```name=^mine[0-1]\\d{3}.*```
     - As all subfilters are joined using OR first filter that matches with provided properties will terminate any further filtering and it will be considered a hit
     - Each sub-filter may have multiple conditions joined using AND. First condition that does not match will terminate further filtering of that sub filter and declare the result as miss.
 
