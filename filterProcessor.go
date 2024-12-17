@@ -14,13 +14,13 @@ type filterResult struct {
 	pass bool
 }
 
-type concurrentFilters struct {
+type AsyncFilters struct {
 	wg      sync.WaitGroup
 	work    chan filterKey
 	results chan filterResult
 }
 
-func (cf *concurrentFilters) start(concurrency int, filter func(attr *BlobAttr) bool) {
+func (cf *AsyncFilters) start(concurrency int, filter func(attr *BlobAttr) bool) {
 	cf.work = make(chan filterKey, concurrency*2)
 	cf.results = make(chan filterResult, concurrency*2)
 
@@ -31,22 +31,22 @@ func (cf *concurrentFilters) start(concurrency int, filter func(attr *BlobAttr) 
 	}
 }
 
-func (cf *concurrentFilters) stop() {
+func (cf *AsyncFilters) stop() {
 	close(cf.work)
 	cf.wg.Wait()
 	close(cf.results)
 }
 
-func (cf *concurrentFilters) addWork(key string, attr *BlobAttr) {
+func (cf *AsyncFilters) addWork(key string, attr *BlobAttr) {
 	cf.work <- filterKey{key: key, attr: attr}
 }
 
-func (cf *concurrentFilters) getNextResult() (string, bool) {
+func (cf *AsyncFilters) getNextResult() (string, bool) {
 	result := <-cf.results
 	return result.key, result.pass
 }
 
-func (cf *concurrentFilters) filterProcessor(filter func(attr *BlobAttr) bool) {
+func (cf *AsyncFilters) filterProcessor(filter func(attr *BlobAttr) bool) {
 	for work := range cf.work {
 		cf.results <- filterResult{key: work.key, pass: filter(work.attr)}
 	}

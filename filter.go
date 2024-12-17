@@ -6,8 +6,8 @@ import (
 )
 
 type BlobFilter struct {
-	filters           [][]attrFilter
-	concurrentFilters *concurrentFilters
+	filters      [][]attrFilter
+	AsyncFilters *AsyncFilters
 }
 
 // This function parses the input string and stores filters in the BlobFilter object
@@ -98,22 +98,22 @@ func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
 // Parallel Filtering logic below
 
 // Setup workers and channels for parallel filtering
-func (bf *BlobFilter) EnableConcurrentFilter(concurrency int) {
+func (bf *BlobFilter) EnableAsyncFilter(concurrency int) {
 	// Create work and results channels for the application
-	bf.concurrentFilters = &concurrentFilters{}
-	bf.concurrentFilters.start(concurrency, bf.IsFileAcceptable)
+	bf.AsyncFilters = &AsyncFilters{}
+	bf.AsyncFilters.start(concurrency, bf.IsFileAcceptable)
 }
 
 // Terminate worker pool and close the channels
-func (bf *BlobFilter) TerminateConcurrentFilter() {
-	bf.concurrentFilters.stop()
-	bf.concurrentFilters = nil
+func (bf *BlobFilter) TerminateAsyncFilter() {
+	bf.AsyncFilters.stop()
+	bf.AsyncFilters = nil
 }
 
 // Add one item for filtering
 func (bf *BlobFilter) AddItem(key string, attr *BlobAttr) error {
-	if bf.concurrentFilters != nil {
-		bf.concurrentFilters.addWork(key, attr)
+	if bf.AsyncFilters != nil {
+		bf.AsyncFilters.addWork(key, attr)
 		return nil
 	}
 	return fmt.Errorf("parallel filtering is not enabled")
@@ -121,8 +121,8 @@ func (bf *BlobFilter) AddItem(key string, attr *BlobAttr) error {
 
 // Get result of the next filtered item
 func (bf *BlobFilter) NextResult() (string, bool) {
-	if bf.concurrentFilters != nil {
-		return bf.concurrentFilters.getNextResult()
+	if bf.AsyncFilters != nil {
+		return bf.AsyncFilters.getNextResult()
 	}
 
 	return "", false

@@ -203,7 +203,7 @@ func (suite *filerSuite) TestFilterExecutionParallel() {
 	}
 
 	// Start parallel processing
-	bf.EnableConcurrentFilter(2)
+	bf.EnableAsyncFilter(2)
 
 	// Enqueue all items
 	for idx, test := range tests {
@@ -225,7 +225,7 @@ func (suite *filerSuite) TestFilterExecutionParallel() {
 	}()
 
 	wg.Wait()
-	bf.TerminateConcurrentFilter()
+	bf.TerminateAsyncFilter()
 	suite.assert.Equal(count, len(tests))
 }
 
