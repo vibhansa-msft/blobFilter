@@ -70,7 +70,7 @@ func (bf *BlobFilter) Configure(filterStr string) error {
 // --------------------------------------------------------------------------------------
 
 // Check a given file attributes pass the configured filter or not
-func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
+func (bf *BlobFilter) IsAcceptable(attr *BlobAttr) bool {
 	for _, filterSet := range bf.filters {
 		andFilterFailed := false
 		for _, individualFilter := range filterSet {
@@ -101,7 +101,7 @@ func (bf *BlobFilter) IsFileAcceptable(attr *BlobAttr) bool {
 func (bf *BlobFilter) EnableAsyncFilter(concurrency int) {
 	// Create work and results channels for the application
 	bf.AsyncFilters = &AsyncFilters{}
-	bf.AsyncFilters.start(concurrency, bf.IsFileAcceptable)
+	bf.AsyncFilters.start(concurrency, bf.IsAcceptable)
 }
 
 // Terminate worker pool and close the channels

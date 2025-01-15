@@ -126,7 +126,7 @@ func (suite *filerSuite) TestFilterExecution() {
 	}
 
 	for _, test := range tests {
-		res := bf.IsFileAcceptable(&test.attr)
+		res := bf.IsAcceptable(&test.attr)
 		suite.assert.Equal(res, test.result)
 	}
 

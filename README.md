@@ -66,7 +66,7 @@ BlobFilter allows user to filter blobs based on
 	bf.Configure("size > 1000 && tag=key1:val1 || size > 2000 && tag=key2:val2 || tier=hot || name=^mine[0-1]\\d{3}.*")
 
    attr := BlobAttr{Size: 1500, Tags: map[string]string{"key1": "val1"}, Tier: "cold", Name: "nine1982.doc"}
-   result := bf.IsFileAcceptable(&attr)
+   result := bf.IsAcceptable(&attr)
    if result {
       fmt.Println("Blob Matches")
    } else {
@@ -85,7 +85,7 @@ BlobFilter allows user to filter blobs based on
 - Application is free to co-relate the key to blobs in anyway it wants
 - Once application has processed all results it can stop concurrent filters using ```TerminateAsyncFilter```
 - Once concurrency is terminated, filters will no longer work. If application wishes to resume it has to turn the concurrency back on.
-- While concurrent filters are running, application can still use ```IsFileAcceptable``` API which is synchronous call.
+- While concurrent filters are running, application can still use ```IsAcceptable``` API which is synchronous call.
 
 ## Sample Code (Async filter)
 ```
